@@ -28,13 +28,13 @@ This week's hands-on assignment covered password recovery on two Cisco devices: 
 
 ## 1. Catalyst 3750 Switch — Password Recovery
 
-> The 3750 has **no power switch or shutdown command** — power is controlled entirely by plugging/unplugging the power cord.
+> The 3750 has **no power switch or shutdown command** the power is controlled entirely by plugging/unplugging the power cord.
 
 ### Step 1: Enter Recovery Mode
 1. Unplug the power cord from the back of the switch.
 2. Press and hold the physical **Mode** button on the front-left panel.
 3. While still holding Mode, plug the power cord back in.
-4. Keep holding Mode until the **SYST LED** flashes amber, then turns solid green — then release.
+4. Keep holding Mode until the **SYST LED** flashes amber, then turns solid green, then release.
 5. PuTTY should now show a `switch:` prompt.
 
 ### Step 2: Bypass the Startup Config
@@ -62,7 +62,7 @@ copy running-config startup-config
 disable
 enable
 ```
-Enter the new password when prompted (input will not display on screen — this is normal).
+Enter the new password when prompted (input will not display on screen, this is normal).
 
 **Result:** Password reset, original configuration preserved, changes saved to startup-config.
 
@@ -97,7 +97,7 @@ end
 copy running-config startup-config
 ```
 
-> **`config-register 0x2102` is critical.** Skipping it means the router will keep ignoring its saved config on every future reboot.
+> **`config-register 0x2102` is supa dupa important.** Skipping it means the router will keep ignoring its saved config on every future reboot.
 
 #### We got: `%% Non-volatile configuration memory invalid or not present.`
 This means there's no existing startup-config to load (fresh/erased device). Skip the `copy startup-config running-config` step and go straight to:
