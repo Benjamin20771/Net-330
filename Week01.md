@@ -6,6 +6,10 @@ This week's hands-on assignment covered password recovery on two Cisco devices: 
 
 ---
 
+## Info found online
+- Google was primarily used
+- Cisco Community
+
 ## Prerequisites
 
 - Console cable connected from your PC to the device's console port
