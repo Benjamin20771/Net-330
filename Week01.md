@@ -194,3 +194,60 @@ https://pulse.internetsociety.org/en/blog/2026/04/18-years-later-ipv6-reaches-ma
 - Internet Society's Pulse dashboard aggregates several independent measurement sources.
 - IPv4 isn't going away, so the majority reflects measured traffic preference.
  
+---
+ 
+### Assignment 2 — Packet Tracer Review Lab
+ 
+Basic topology: Laptop — Switch — Router — Switch — Server, two subnets joined at the router.
+ 
+**Topology:** `Foster Laptop - Foster Switch - CNCS Router (Fa0/0 | Fa0/1) - Skiff Switch - Skiff Server`
+ 
+#### IP Plan
+ 
+| Device | Interface | IP Address | Mask | Gateway |
+|---|---|---|---|---|
+| CNCS Router | Fa0/0 | 192.168.3.1 | /24 | — |
+| CNCS Router | Fa0/1 | 192.168.1.1 | /24 | — |
+| Foster Laptop | NIC | 192.168.3.2 | /24 | 192.168.3.1 |
+| Skiff Server | NIC | 192.168.1.2 | /24 | 192.168.1.1 |
+ 
+**Key idea:** the router's interface IP on a segment is the default gateway for every device on that segment.
+ 
+#### Cabling
+- **Straight-Through** for everything here (laptop↔switch, switch↔router, switch↔server). Crossover is only needed for like-to-like connections (switch↔switch, PC↔PC), which didn't come up in this lab.
+#### Router Config (CLI)
+```
+enable
+configure terminal
+interface fastEthernet0/0
+ ip address 192.168.3.1 255.255.255.0
+ no shutdown
+exit
+interface fastEthernet0/1
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+exit
+end
+copy running-config startup-config
+```
+Watch for `%LINK-5-CHANGED: ... changed state to up` — if it doesn't show up, the cable's probs in the wrong interface.
+ 
+#### Ping Test
+From laptop Command Prompt: `ping 192.168.1.2` → looking for `Reply from 192.168.1.2`.
+ 
+#### Simulation Mode — Reading HTTP Traffic
+1. Stopwatch icon (bottom right) - Simulation Mode.
+2. Laptop - Web Browser - enter server's IP - Go.
+3. Capture/Forward through the event list — you'll see it play out in order:
+   **TCP handshake (SYN - SYN-ACK - ACK) - HTTP GET → HTTP response**
+4. Click any HTTP (purple) row - PDU Details.
+   - **Outbound** = packet leaving that device (e.g. laptop sending the GET)
+   - **Inbound** = packet arriving at that device (e.g. server receiving the GET, or laptop receiving the response)
+   - Rule of thumb: pick Outbound if the device is the source of that hop, Inbound if it's the destination.
+#### NVRAM Save / Power Cycle Test
+1. Back to Realtime mode (clock icon).
+2. Router - Config tab (or CLI `copy running-config startup-config`) to save to NVRAM.
+3. Router - Physical tab - power off - power back on.
+4. Fast Forward Time to skip the boot wait.
+5. `show running-config` (or `show ip interface brief`) → confirm Fa0/0 / Fa0/1 IPs survived the reboot.
+If the IPs vanish after reboot, the save didn't take — redo the `copy running-config startup-config` and repeat the power cycle.
