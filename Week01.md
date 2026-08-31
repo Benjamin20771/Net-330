@@ -239,7 +239,7 @@ From laptop Command Prompt: `ping 192.168.1.2` → looking for `Reply from 192.1
 1. Stopwatch icon (bottom right) - Simulation Mode.
 2. Laptop - Web Browser - enter server's IP - Go.
 3. Capture/Forward through the event list — you'll see it play out in order:
-   **TCP handshake (SYN - SYN-ACK - ACK) - HTTP GET → HTTP response**
+   **TCP handshake (SYN - SYN-ACK - ACK) - HTTP GET - HTTP response**
 4. Click any HTTP (purple) row - PDU Details.
    - **Outbound** = packet leaving that device (e.g. laptop sending the GET)
    - **Inbound** = packet arriving at that device (e.g. server receiving the GET, or laptop receiving the response)
