@@ -23,7 +23,7 @@ Clinic, Visitor, and Office each need 300 hosts, which requires a /23 (510 usabl
 
 ## Lab 5-1: Small Enterprise Class Lab, Community Healthcare Facility
 
-Single Distribution Area design. One multilayer switch acting as router at the Border layer, three plain switches at Core, three plain switches at Edge, two servers hanging off the Data Center Core.
+Single Distribution Area design. One multilayer switch acting as a router at the Border layer, three plain switches at the Core, three plain switches at Edge, two servers hanging off the Data Center Core.
 
 ### Devices Used
 
@@ -37,13 +37,11 @@ Single Distribution Area design. One multilayer switch acting as router at the B
 
 ### Pre Lab Setup
 
-Set Options, Preferences, Miscellaneous, Auto File Backup Interval to 1 minute. Save the workspace immediately as `NET-330-Lab-5-1-name` before doing anything else, since auto backup only starts working after that first manual save.
+Set Options -> Preferences -> Miscellaneous -> Auto File Backup Interval to 1 minute. Save the workspace immediately as `NET-330-Lab-5-1-name` before doing anything else, since auto backup only starts working after that first manual save.
 
 ### Interface Naming Gotcha
 
 The 3650-24PS does not use FastEthernet port names like the 2960s do. It uses `GigabitEthernet1/0/X`. Ran into an "Invalid interface type and number" error trying `interface FastEthernet0/1` on the router before catching this. Running `show ip interface brief` on any new device before typing interface commands is the fastest way to confirm actual port names rather than assuming.
-
-Also worth noting: the `switchport trunk encapsulation dot1q` command does not work on either the 3650-24PS or the 2960-24TT in this lab. Both throw `Invalid input detected`. Skipping that line entirely and going straight to `switchport mode trunk` works fine, same as some of the switches from earlier weeks.
 
 ### Hospital Router Configuration
 
@@ -107,7 +105,7 @@ VLAN 1 is administratively down by default on this device, so it needs its own `
 
 ### North Core and South Core Configuration
 
-Same command block for both, just swap the hostname.
+Same command block for both; just swap the hostname.
 
 ```
 enable
@@ -138,7 +136,7 @@ copy run start
 
 ### North Wing Edge and South Wing Edge Configuration
 
-Same block for both, just swap hostname.
+Same block for both; just swap hostname.
 
 ```
 enable
@@ -177,8 +175,6 @@ interface FastEthernet0/24
 end
 copy run start
 ```
-
-6 ports Clinic, 4 ports Visitor, 6 ports Office, matching the lab requirement exactly. The uplink trunk port needs to be a dedicated port outside the 1 through 16 access range. Do not reuse a port that is already assigned to an access VLAN as the trunk uplink.
 
 ### Data Center Core Configuration
 
@@ -247,10 +243,10 @@ Rename to DNS-01. Static IP 10.20.6.4, mask 255.255.255.0, gateway 10.20.6.1. Tu
 
 | Hostname | Type | IP Address |
 |---|---|---|
-| ns.word.com | A | 10.20.6.4 |
-| dhcp.word.com | A | 10.20.6.2 |
+| ns.cool.com | A | 10.20.6.4 |
+| dhcp.uncool.com | A | 10.20.6.2 |
 
-Updated every DHCP pool (serverPool, CLINIC, VISITOR, OFFICE, COUNSELING) to hand out 10.20.6.4 as the DNS server instead of 0.0.0.0. Clients needed a fresh DHCP release and renew to actually pick up the new DNS server address after this change; a stale lease does not update on its own.
+Updated every DHCP pool (serverPool, CLINIC, VISITOR, OFFICE, COUNSELING) to hand out 10.20.6.4 as the DNS server instead of 0.0.0.0.
 
 Verified from a client:
 
@@ -259,7 +255,7 @@ nslookup ns.word.com
 nslookup dhcp.word.com
 ```
 
-### Major Troubleshooting Issue: Native VLAN Mismatch
+### Troubleshooting Issue: Native VLAN Mismatch
 
 After building South Core and South Wing Edge, a test PC on South Wing pulled a DHCP address from the VLAN 1 pool (10.20.6.x) instead of the Clinic pool (10.20.0.x), even though the port it was plugged into was correctly assigned to VLAN 100 in the switch configuration.
 
@@ -272,8 +268,6 @@ The switch log revealed the actual cause:
 The trunk uplink port on South Wing Edge and one of the VLAN 100 access ports had been assigned to the same physical port number. That port was serving two conflicting roles at once: an access port for a client, and the trunk link to South Core. This caused traffic to be treated inconsistently between the two switches.
 
 The fix was physical, not just configuration. Moving the actual cable so the trunk uplink to South Core landed on a dedicated port (Fa0/24, matching the pattern already used on North Wing Edge), separate from the access port range, cleared the mismatch. The PC correctly pulled a Clinic VLAN address on its next DHCP renewal.
-
-**Lesson:** a switchport configuration can be completely correct in the running config and still fail if the physical cabling does not actually match what that configuration expects. When a device is doing something a configuration review says it should not be doing, check what is physically plugged into which port before assuming the command syntax is wrong.
 
 ---
 
